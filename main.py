@@ -11,7 +11,6 @@ from viberbot.api.viber_requests import ViberMessageRequest
 from viberbot.api.viber_requests import ViberSubscribedRequest
 from viberbot.api.viber_requests import ViberUnsubscribedRequest
 
-app = Flask(__name__)
 viber = Api(BotConfiguration(
     name='CigaNettes',
     avatar='res/ciga.jpg',
@@ -43,4 +42,5 @@ def incoming():
     return Response(status=200)
 
 if __name__ == "__main__":
+    viber.set_webhook('https://ciganettes.herokuapp.com/')
     incoming()
