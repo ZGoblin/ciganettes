@@ -42,5 +42,5 @@ def incoming():
     return Response(status=200)
 
 if __name__ == "__main__":
-    viber.set_webhook('https://ciganettes.herokuapp.com/')
+    viber.set_webhook('https://ciganettes.herokuapp.com:443/')
     incoming()
