@@ -18,8 +18,6 @@ viber = Api(BotConfiguration(
     auth_token='4c5e6aa2d8c00da6-5282a1978655c059-d4269b0adfb5c183'
 ))
 
-
-@app.route('/', methods=['POST'])
 def incoming():
     logging.debug("received request. post data: {0}".format(request.get_data()))
     # every viber message is signed, you can verify the signature using this method
@@ -45,4 +43,4 @@ def incoming():
     return Response(status=200)
 
 if __name__ == "__main__":
-    app.run(host='https://ciganettes.herokuapp.com/', port=443, debug=True)
+    incoming()
