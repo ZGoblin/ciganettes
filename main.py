@@ -1,16 +1,48 @@
-# This is a sample Python script.
+from flask import Flask, request, Response
+from viberbot import Api
+from viberbot.api.bot_configuration import BotConfiguration
+from viberbot.api.messages import VideoMessage
+from viberbot.api.messages.text_message import TextMessage
+import logging
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from viberbot.api.viber_requests import ViberConversationStartedRequest
+from viberbot.api.viber_requests import ViberFailedRequest
+from viberbot.api.viber_requests import ViberMessageRequest
+from viberbot.api.viber_requests import ViberSubscribedRequest
+from viberbot.api.viber_requests import ViberUnsubscribedRequest
+
+app = Flask(__name__)
+viber = Api(BotConfiguration(
+    name='CigaNettes',
+    avatar='res/ciga.jpg',
+    auth_token='4c5e6aa2d8c00da6-5282a1978655c059-d4269b0adfb5c183'
+))
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@app.route('/', methods=['POST'])
+def incoming():
+    logging.debug("received request. post data: {0}".format(request.get_data()))
+    # every viber message is signed, you can verify the signature using this method
+    if not viber.verify_signature(request.get_data(), request.headers.get('X-Viber-Content-Signature')):
+        return Response(status=403)
 
+    # this library supplies a simple way to receive a request object
+    viber_request = viber.parse_request(request.get_data())
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    if isinstance(viber_request, ViberMessageRequest):
+        message = viber_request.message
+        # lets echo back
+        viber.send_messages(viber_request.sender.id, [
+            message
+        ])
+    elif isinstance(viber_request, ViberSubscribedRequest):
+        viber.send_messages(viber_request.get_user.id, [
+            TextMessage(text="thanks for subscribing!")
+        ])
+    elif isinstance(viber_request, ViberFailedRequest):
+        logging.warning("client failed receiving message. failure: {0}".format(viber_request))
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    return Response(status=200)
+
+if __name__ == "__main__":
+    app.run(host='https://ciganettes.herokuapp.com/', port=443, debug=True)
